@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>HexiBetterShotgun</AssemblyName>
     <Description>Makes the shotgun fire pellets that individually deal damage</Description>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -14,9 +14,6 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
-    <Reference Include="LC_API">
-      <HintPath>/home/marc/.config/r2modmanPlus-local/LethalCompany/cache/2018-LC_API/3.0.0/BepinEx/plugins/LC_API.dll</HintPath>
-    </Reference>
     <Reference Include="Game Core">
       <HintPath>/home/marc/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Assembly-CSharp.dll</HintPath>
     </Reference>
