@@ -153,7 +153,7 @@ namespace BetterShotgun {
                 for (int j = 0; j < hits.Length; j++) {
                     GameObject obj = hits[j].transform.gameObject;
                     if (obj.TryGetComponent(out IHittable hittable)) {
-                        if (hittable == gun.playerHeldBy) continue; // self hit
+                        if (ReferenceEquals(hittable, gun.playerHeldBy)) continue; // self hit
                         EnemyAI ai = null;
                         if (hittable is EnemyAICollisionDetect detect) ai = detect.mainScript;
                         if (ai != null) {
