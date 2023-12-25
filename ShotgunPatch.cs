@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
@@ -228,6 +229,26 @@ namespace BetterShotgun {
             // TODO: this should be networked
             NewShotgunHandler.ShotgunRandom = new System.Random(__instance.randomMapSeed);
             Debug.Log("Shotgun seed: " + __instance.randomMapSeed);
+        }
+
+        [HarmonyPatch(typeof(SandSpiderAI), "HitEnemy")]
+        [HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> SpiderDamageFix(IEnumerable<CodeInstruction> original) {
+            var c = -1;
+            var fieldInfo = typeof(SandSpiderAI).GetField("health", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            foreach (CodeInstruction inst in original) {
+                if (c == -1 && inst.LoadsField(fieldInfo)) {
+                    c = 0;
+                    yield return inst;
+                }
+                else if (c == 0) {
+                    c = 1;
+                    // use the force value and not a static 1
+                    var newInst = new CodeInstruction(OpCodes.Ldarg_1);
+                    yield return newInst;
+                }
+                else yield return inst;
+            }
         }
     }
 }
