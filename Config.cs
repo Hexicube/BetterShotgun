@@ -5,7 +5,7 @@ using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
 
-public static class ShotgunConfig {
+public class ShotgunConfig {
     private static int numTightPelletsLocal = 3;
     private static float tightPelletAngleLocal = 2.5f;
     private static int numLoosePelletsLocal = 7;
@@ -25,6 +25,8 @@ public static class ShotgunConfig {
     private static void SetToLocalValues() => SetValues(numTightPelletsLocal, tightPelletAngleLocal, numLoosePelletsLocal, loosePelletAngleLocal);
 
     public static void LoadConfig(ConfigFile config) {
+        Debug.Log(config);
+
         numTightPelletsLocal = Math.Clamp(config.Bind("Pellets", "tightPelletCount", 3, "Number of pellets for tight grouping").Value, 0, 100);
         tightPelletAngleLocal = Mathf.Clamp(config.Bind("Pellets", "tightPelletAngle", 2.5f, "Pellet spread for tight grouping (degrees)").Value, 0f, 90f);
         numLoosePelletsLocal = Math.Clamp(config.Bind("Pellets", "loosePelletCount", 7, "Number of pellets for loose grouping").Value, 0, 100);
@@ -62,8 +64,6 @@ public static class ShotgunConfig {
 
     private static bool IsHost() => NetworkManager.Singleton.IsHost;
 
-    private static readonly CustomMessagingManager networkManager = NetworkManager.Singleton.CustomMessagingManager;
-
     public static void OnRequestSync(ulong clientID, FastBufferReader reader) {
         if (!IsHost()) return;
 
@@ -72,7 +72,7 @@ public static class ShotgunConfig {
         FastBufferWriter dataOut = new(data.Length, Unity.Collections.Allocator.Temp, data.Length);
         try {
             dataOut.WriteBytes(data);
-            networkManager.SendNamedMessage("HexiShotgun_OnReceiveConfigSync", clientID, dataOut, NetworkDelivery.Reliable);
+            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("HexiShotgun_OnReceiveConfigSync", clientID, dataOut, NetworkDelivery.Reliable);
         }
         catch (Exception e) {
             Debug.LogError("SHOTGUN: Failed to send config: " + e);
@@ -101,18 +101,18 @@ public static class ShotgunConfig {
         if (IsHost()) {
             Debug.Log("SHOTGUN: Started hosting, using local settings");
             SetToLocalValues();
-            networkManager.RegisterNamedMessageHandler("HexiShotgun_OnRequestConfigSync", OnRequestSync);
+            NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("HexiShotgun_OnRequestConfigSync", OnRequestSync);
         }
         else {
             Debug.Log("SHOTGUN: Connected to server, requesting settings");
-            networkManager.RegisterNamedMessageHandler("HexiShotgun_OnReceiveConfigSync", OnReceiveSync);
+            NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("HexiShotgun_OnReceiveConfigSync", OnReceiveSync);
             FastBufferWriter blankOut = new();
-            networkManager.SendNamedMessage("HexiShotgun_OnRequestConfigSync", 0, blankOut, NetworkDelivery.Reliable);
+            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("HexiShotgun_OnRequestConfigSync", 0, blankOut, NetworkDelivery.Reliable);
         }
     }
 
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlayerControllerB), "StartDisconnect")]
+    [HarmonyPatch(typeof(GameNetworkManager), "StartDisconnect")]
     static void ServerDisconnect() {
         Debug.Log("SHOTGUN: Server disconnect");
         SetToLocalValues();
