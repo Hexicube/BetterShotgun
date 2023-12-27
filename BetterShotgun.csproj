@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>HexiBetterShotgun</AssemblyName>
     <Description>Makes the shotgun fire pellets that individually deal damage</Description>
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -19,6 +19,9 @@
     </Reference>
     <Reference Include="Netcode">
       <HintPath>/home/marc/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Unity.Netcode.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Collections">
+      <HintPath>/home/marc/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Lethal Company/Lethal Company_Data/Managed/Unity.Collections.dll</HintPath>
     </Reference>
   </ItemGroup>
   

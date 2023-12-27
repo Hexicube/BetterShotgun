@@ -63,11 +63,8 @@ namespace BetterShotgun {
     class NewShotgunHandler {
         public const float range = 30f;
 
-        // forcing some pellets into a tighter packing should feel more consistent
-        const int numTightPellets = 3;
-        const float tightPelletAngle = 2.5f;
-        const int numLoosePellets = 7;
-        const float loosePelletAngle = 10f;
+        static readonly int PLAYER_HIT_MASK = StartOfRound.Instance.collidersRoomMaskDefaultAndPlayers | 524288; //524288 = enemy mask
+        static readonly int ENEMY_HIT_MASK = StartOfRound.Instance.collidersRoomMaskDefaultAndPlayers;
 
         public static System.Random ShotgunRandom = new(0);
 
@@ -111,13 +108,14 @@ namespace BetterShotgun {
             // generic firing stuff - replaced with pellets
 
             // generate pellet vectors (done separately to minimise time random state is modified)
-            var vectorList = new Vector3[numTightPellets + numLoosePellets];
+            var vectorList = new Vector3[ShotgunConfig.numTightPellets + ShotgunConfig.numLoosePellets];
             var oldRandomState = UnityEngine.Random.state;
             UnityEngine.Random.InitState(ShotgunRandom.Next());
-            for (int i = 0; i < numTightPellets + numLoosePellets; i++) {
-                float variance = (i < numTightPellets) ? tightPelletAngle : loosePelletAngle;
+            for (int i = 0; i < ShotgunConfig.numTightPellets + ShotgunConfig.numLoosePellets; i++) {
+                float variance = (i < ShotgunConfig.numTightPellets) ? ShotgunConfig.tightPelletAngle : ShotgunConfig.loosePelletAngle;
                 var circlePoint = UnityEngine.Random.onUnitSphere; // pick a random point on a sphere
                 var angle = variance * Mathf.Sqrt(UnityEngine.Random.value); // pick a random angle to spread by
+                if (Vector3.Angle(shotgunForward, circlePoint) < angle) circlePoint *= -1; // make sure the spread will be by the specified angle amount
                 var vect = Vector3.RotateTowards(shotgunForward, circlePoint, angle * Mathf.PI / 180f, 0f); // rotate towards that random point, capped by chosen angle
                 vectorList[i] = vect;
             }
@@ -146,7 +144,7 @@ namespace BetterShotgun {
             for (int i = 0; i < vectorList.Length; i++) {
                 Vector3 vect = vectorList[i];
                 ray = new Ray(shotgunPosition, vect);
-                RaycastHit[] hits = Physics.RaycastAll(ray, range, StartOfRound.Instance.collidersRoomMaskDefaultAndPlayers | 524288, QueryTriggerInteraction.Collide); //524288 = enemy mask
+                RaycastHit[] hits = Physics.RaycastAll(ray, range, playerFired ? PLAYER_HIT_MASK : ENEMY_HIT_MASK, QueryTriggerInteraction.Collide);
                 Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
                 Vector3 end = shotgunPosition + vect * range;
                 Debug.Log("SHOTGUN: RaycastAll hit " + hits.Length + " things (" + playerFired + "," + thisPlayerFired + ")");

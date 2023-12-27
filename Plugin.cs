@@ -12,7 +12,10 @@ namespace BetterShotgun
         {
             // Plugin startup logic
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            ShotgunConfig.LoadConfig(Config);
+            
             h = Harmony.CreateAndPatchAll(typeof(ShotgunPatch));
+            h.PatchAll(typeof(ShotgunConfig));
         }
 
         private void OnDestroy()
