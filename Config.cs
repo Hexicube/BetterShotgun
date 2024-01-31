@@ -84,9 +84,9 @@ public class ShotgunConfig {
 
     public static void OnReceiveSync(ulong clientID, FastBufferReader reader) {
         Debug.Log("SHOTGUN: Received config from host");
-        byte[] data = new byte[16];
+        byte[] data = new byte[17];
         try {
-            reader.ReadBytes(ref data, 16);
+            reader.ReadBytes(ref data, 17);
             SetSettings(data);
         }
         catch (Exception e) {
@@ -106,7 +106,8 @@ public class ShotgunConfig {
         else {
             Debug.Log("SHOTGUN: Connected to server, requesting settings");
             NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("HexiShotgun_OnReceiveConfigSync", OnReceiveSync);
-            FastBufferWriter blankOut = new();
+            byte[] data = new byte[17];
+            FastBufferWriter blankOut = new(data.Length, Unity.Collections.Allocator.Temp);
             NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("HexiShotgun_OnRequestConfigSync", 0, blankOut, NetworkDelivery.Reliable);
         }
     }
