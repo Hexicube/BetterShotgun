@@ -6,6 +6,8 @@ using Unity.Netcode;
 using UnityEngine;
 
 public class ShotgunConfig {
+    private const int byteDim = 17;
+    
     private static int numTightPelletsLocal = 3;
     private static float tightPelletAngleLocal = 2.5f;
     private static int numLoosePelletsLocal = 7;
@@ -36,7 +38,7 @@ public class ShotgunConfig {
     }
 
     public static byte[] GetSettings() {
-        byte[] data = new byte[17];
+        byte[] data = new byte[byteDim];
         data[0] = 1;
         Array.Copy(BitConverter.GetBytes(numTightPelletsLocal), 0, data, 1, 4);
         Array.Copy(BitConverter.GetBytes(tightPelletAngleLocal), 0, data, 5, 4);
@@ -84,9 +86,9 @@ public class ShotgunConfig {
 
     public static void OnReceiveSync(ulong clientID, FastBufferReader reader) {
         Debug.Log("SHOTGUN: Received config from host");
-        byte[] data = new byte[17];
+        byte[] data = new byte[byteDim];
         try {
-            reader.ReadBytes(ref data, 17);
+            reader.ReadBytes(ref data, byteDim);
             SetSettings(data);
         }
         catch (Exception e) {
@@ -106,7 +108,7 @@ public class ShotgunConfig {
         else {
             Debug.Log("SHOTGUN: Connected to server, requesting settings");
             NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("HexiShotgun_OnReceiveConfigSync", OnReceiveSync);
-            FastBufferWriter blankOut = new(0, Unity.Collections.Allocator.Temp, 0);
+            FastBufferWriter blankOut = new(byteDim, Unity.Collections.Allocator.Temp);
             NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("HexiShotgun_OnRequestConfigSync", 0, blankOut, NetworkDelivery.Reliable);
         }
     }
